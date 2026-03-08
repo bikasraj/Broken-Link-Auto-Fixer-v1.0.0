@@ -7,8 +7,6 @@
  * links in the custom database table.
  *
  * @package BrokenLinkAutoFixer
- * @author  Bikas Kumar <bikas@codesala.in>
- * @company CodeSala — codesala.in
  */
 
 // Prevent direct file access.
@@ -16,6 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Scans post content for broken links using the WordPress HTTP API.
+ */
 class BLAF_Link_Scanner {
 
 	/**
@@ -55,7 +56,7 @@ class BLAF_Link_Scanner {
 	 * Run a full site scan.
 	 * Fetches posts in batches and checks every link.
 	 *
-	 * @return array { found: int, checked: int }
+	 * @return array { found: int, checked: int }|array{ error: string }
 	 */
 	public function run_full_scan() {
 		// Prevent overlapping scans via a transient lock.
@@ -64,9 +65,9 @@ class BLAF_Link_Scanner {
 		}
 		set_transient( 'blaf_scan_running', 1, HOUR_IN_SECONDS );
 
-		$stats    = array( 'found' => 0, 'checked' => 0 );
-		$posts    = $this->get_all_posts();
-		$checked  = 0;
+		$stats   = array( 'found' => 0, 'checked' => 0 );
+		$posts   = $this->get_all_posts();
+		$checked = 0;
 
 		foreach ( $posts as $post ) {
 			$links = $this->extract_links( $post->post_content );
@@ -77,11 +78,11 @@ class BLAF_Link_Scanner {
 				}
 
 				$http_code = $this->check_url( $url );
-				$checked++;
+				++$checked;
 
 				if ( in_array( $http_code, $this->broken_codes, true ) ) {
 					BLAF_Database::insert_link( $post->ID, $post->post_title, $url, $http_code );
-					$stats['found']++;
+					++$stats['found'];
 				}
 			}
 		}
@@ -104,8 +105,8 @@ class BLAF_Link_Scanner {
 	/**
 	 * Scan a single post by ID.
 	 *
-	 * @param int $post_id
-	 * @return array { found: int, checked: int }
+	 * @param int $post_id WordPress post ID.
+	 * @return array { found: int, checked: int }|array{ error: string }
 	 */
 	public function scan_post( $post_id ) {
 		$post = get_post( absint( $post_id ) );
@@ -113,16 +114,16 @@ class BLAF_Link_Scanner {
 			return array( 'error' => __( 'Post not found.', 'broken-link-auto-fixer' ) );
 		}
 
-		$stats   = array( 'found' => 0, 'checked' => 0 );
-		$links   = $this->extract_links( $post->post_content );
+		$stats = array( 'found' => 0, 'checked' => 0 );
+		$links = $this->extract_links( $post->post_content );
 
 		foreach ( $links as $url ) {
 			$http_code = $this->check_url( $url );
-			$stats['checked']++;
+			++$stats['checked'];
 
 			if ( in_array( $http_code, $this->broken_codes, true ) ) {
 				BLAF_Database::insert_link( $post->ID, $post->post_title, $url, $http_code );
-				$stats['found']++;
+				++$stats['found'];
 			}
 		}
 
@@ -137,19 +138,21 @@ class BLAF_Link_Scanner {
 	 * @return WP_Post[]
 	 */
 	private function get_all_posts() {
-		return get_posts( array(
-			'post_type'      => array( 'post', 'page' ),
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-			'fields'         => 'all',
-		) );
+		return get_posts(
+			array(
+				'post_type'      => array( 'post', 'page' ),
+				'post_status'    => 'publish',
+				'posts_per_page' => -1, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page
+				'fields'         => 'all',
+			)
+		);
 	}
 
 	/**
 	 * Extract all href values from HTML content using a regex.
 	 *
-	 * @param string $content  Post content (HTML).
-	 * @return array           Unique, absolute URLs.
+	 * @param string $content Post content (HTML).
+	 * @return array Unique, absolute URLs.
 	 */
 	public function extract_links( $content ) {
 		if ( empty( $content ) ) {
@@ -170,7 +173,7 @@ class BLAF_Link_Scanner {
 
 			// Skip empty, anchor-only, mailto, tel, javascript links.
 			if ( empty( $url )
-				|| 0 === strpos( $url, '#' )
+				|| '#' === $url[0]
 				|| 0 === strpos( $url, 'mailto:' )
 				|| 0 === strpos( $url, 'tel:' )
 				|| 0 === strpos( $url, 'javascript:' )
@@ -194,7 +197,7 @@ class BLAF_Link_Scanner {
 	 *
 	 * Uses in-memory cache so the same URL is only requested once per scan.
 	 *
-	 * @param string $url
+	 * @param string $url URL to check.
 	 * @return int HTTP status code; 0 on timeout / connection error.
 	 */
 	public function check_url( $url ) {
@@ -203,19 +206,17 @@ class BLAF_Link_Scanner {
 		}
 
 		$args = array(
-			'timeout'    => 10,
-			'method'     => 'HEAD',
-			'user-agent' => 'BrokenLinkAutoFixer/1.0 (WordPress; +https://codesala.in)',
-			'sslverify'  => false,
-			'redirection'=> 5,
+			'timeout'     => 10,
+			'user-agent'  => 'BrokenLinkAutoFixer/' . BLAF_VERSION . '; WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ),
+			'sslverify'   => true,
+			'redirection' => 5,
 		);
 
 		$response = wp_remote_head( $url, $args );
 
 		// Some servers don't support HEAD — fall back to GET.
-		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) === 405 ) {
-			$args['method'] = 'GET';
-			$response       = wp_remote_get( $url, $args );
+		if ( is_wp_error( $response ) || 405 === wp_remote_retrieve_response_code( $response ) ) {
+			$response = wp_remote_get( $url, $args );
 		}
 
 		if ( is_wp_error( $response ) ) {
@@ -234,35 +235,36 @@ class BLAF_Link_Scanner {
 	/**
 	 * Send an email notification to the admin when broken links are found.
 	 *
-	 * @param int $count  Number of broken links found.
+	 * @param int $count Number of broken links found.
 	 * @return void
 	 */
 	private function send_email_alert( $count ) {
-		$to      = sanitize_email( get_option( 'blaf_alert_email', get_option( 'admin_email' ) ) );
+		$to = sanitize_email( get_option( 'blaf_alert_email', get_option( 'admin_email' ) ) );
+
 		$subject = sprintf(
-			/* translators: %d: number of broken links */
-			__( '[%s] %d Broken Links Detected', 'broken-link-auto-fixer' ),
+			/* translators: 1: Site name, 2: Number of broken links found. */
+			__( '[%1$s] %2$d Broken Links Detected', 'broken-link-auto-fixer' ),
 			get_bloginfo( 'name' ),
 			$count
 		);
 
 		// Fetch the latest broken links for the email body.
-		$links   = BLAF_Database::get_links( array( 'status' => 'broken', 'limit' => 20 ) );
-		$rows    = '';
+		$links = BLAF_Database::get_links( array( 'status' => 'broken', 'limit' => 20 ) );
+		$rows  = '';
 		foreach ( $links as $link ) {
 			$rows .= sprintf(
 				"  - [%d] %s\n    URL: %s\n    Page: %s\n\n",
 				$link->http_code,
-				esc_html( $link->post_title ),
-				esc_url( $link->broken_url ),
-				esc_url( get_permalink( $link->post_id ) )
+				$link->post_title,
+				$link->broken_url,
+				get_permalink( $link->post_id )
 			);
 		}
 
 		$message = sprintf(
-			/* translators: 1: site name, 2: count, 3: link rows, 4: dashboard URL */
+			/* translators: 1: Number of broken links, 2: Site name, 3: List of broken link rows, 4: Dashboard URL. */
 			__(
-				"Hello,\n\nThe Broken Link Auto Fixer plugin has detected %1\$d broken link(s) on %2\$s.\n\n%3\$s\nView and fix them in your dashboard:\n%4\$s\n\n— Broken Link Auto Fixer by CodeSala (codesala.in)",
+				"Hello,\n\nThe Broken Link Auto Fixer plugin has detected %1\$d broken link(s) on %2\$s.\n\n%3\$s\nView and fix them in your dashboard:\n%4\$s\n\n-- Broken Link Auto Fixer",
 				'broken-link-auto-fixer'
 			),
 			$count,

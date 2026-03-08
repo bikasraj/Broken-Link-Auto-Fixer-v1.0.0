@@ -10,8 +10,6 @@
  *   $last_scan string  — Date/time of last scan or "Never".
  *
  * @package BrokenLinkAutoFixer
- * @author  Bikas Kumar <bikas@codesala.in>
- * @company CodeSala — codesala.in
  */
 
 // Prevent direct file access.
@@ -21,12 +19,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <div class="wrap blaf-wrap">
 
-	<!-- ── Header ────────────────────────────────────────────────── -->
+	<!-- ── Header ────────────────────────────────────────────── -->
 	<div class="blaf-header">
 		<div class="blaf-header-left">
 			<span class="dashicons dashicons-editor-unlink blaf-icon"></span>
 			<h1><?php esc_html_e( 'Broken Link Auto Fixer', 'broken-link-auto-fixer' ); ?></h1>
-			<span class="blaf-by">by <a href="https://codesala.in" target="_blank" rel="noopener noreferrer">CodeSala</a></span>
 		</div>
 		<div class="blaf-header-right">
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=blaf-settings' ) ); ?>" class="button">
@@ -35,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	</div>
 
-	<!-- ── Stats Bar ─────────────────────────────────────────────── -->
+	<!-- ── Stats Bar ─────────────────────────────────────────── -->
 	<div class="blaf-stats-bar">
 		<div class="blaf-stat-card">
 			<span class="blaf-stat-number" id="blaf-total-count"><?php echo esc_html( $total ); ?></span>
@@ -53,7 +50,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	</div>
 
-	<!-- ── Scan Controls ─────────────────────────────────────────── -->
+	<!-- ── Scan Controls ─────────────────────────────────────── -->
 	<div class="blaf-scan-box">
 		<button id="blaf-start-scan" class="button button-primary button-hero">
 			<span class="dashicons dashicons-search"></span>
@@ -66,7 +63,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<div class="blaf-progress-bar-inner" id="blaf-progress-bar"></div>
 			</div>
 			<p id="blaf-progress-text" class="blaf-progress-text">
-				<?php esc_html_e( 'Scanning links, please wait…', 'broken-link-auto-fixer' ); ?>
+				<?php esc_html_e( 'Scanning links, please wait...', 'broken-link-auto-fixer' ); ?>
 			</p>
 		</div>
 
@@ -74,7 +71,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div id="blaf-scan-result" class="blaf-notice" style="display:none;"></div>
 	</div>
 
-	<!-- ── Broken Links Table ─────────────────────────────────────── -->
+	<!-- ── Broken Links Table ─────────────────────────────────── -->
 	<h2 class="blaf-section-title">
 		<?php esc_html_e( 'Detected Broken Links', 'broken-link-auto-fixer' ); ?>
 		<span class="blaf-badge"><?php echo esc_html( $total ); ?></span>
@@ -88,9 +85,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<?php else : ?>
 		<!-- Replace-URL Modal -->
-		<div id="blaf-modal-overlay" class="blaf-modal-overlay" style="display:none;">
+		<div id="blaf-modal-overlay" class="blaf-modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="blaf-modal-title">
 			<div class="blaf-modal">
-				<h3><?php esc_html_e( 'Replace Broken URL', 'broken-link-auto-fixer' ); ?></h3>
+				<h3 id="blaf-modal-title"><?php esc_html_e( 'Replace Broken URL', 'broken-link-auto-fixer' ); ?></h3>
 				<p class="blaf-modal-old-url"></p>
 				<label for="blaf-new-url"><?php esc_html_e( 'New URL:', 'broken-link-auto-fixer' ); ?></label>
 				<input type="url" id="blaf-new-url" class="regular-text" placeholder="https://example.com/new-page">
@@ -128,18 +125,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<td><?php echo esc_html( $link->id ); ?></td>
 					<td>
 						<span class="blaf-http-badge <?php echo esc_attr( $http_class ); ?>">
-							<?php echo esc_html( $link->http_code ?: 'ERR' ); ?>
+							<?php echo esc_html( $link->http_code ? $link->http_code : 'ERR' ); ?>
 						</span>
 					</td>
 					<td>
 						<strong><?php echo esc_html( $link->post_title ); ?></strong><br>
 						<a href="<?php echo esc_url( get_permalink( $link->post_id ) ); ?>" target="_blank" rel="noopener noreferrer" class="blaf-view-post">
-							<?php esc_html_e( 'View Post ↗', 'broken-link-auto-fixer' ); ?>
+							<?php esc_html_e( 'View Post', 'broken-link-auto-fixer' ); ?> &#8599;
 						</a>
 					</td>
 					<td>
 						<a href="<?php echo esc_url( $link->broken_url ); ?>" target="_blank" rel="noopener noreferrer" class="blaf-broken-url" title="<?php echo esc_attr( $link->broken_url ); ?>">
-							<?php echo esc_html( mb_strimwidth( $link->broken_url, 0, 60, '…' ) ); ?>
+							<?php echo esc_html( mb_strimwidth( $link->broken_url, 0, 60, '...' ) ); ?>
 						</a>
 					</td>
 					<td><?php echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $link->date_found ) ) ); ?></td>
@@ -172,17 +169,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</tbody>
 		</table>
 	<?php endif; ?>
-
-	<!-- Footer -->
-	<p class="blaf-footer-credit">
-		<?php
-		printf(
-			/* translators: 1: plugin version, 2: company link */
-			esc_html__( 'Broken Link Auto Fixer v%1$s — by %2$s', 'broken-link-auto-fixer' ),
-			esc_html( BLAF_VERSION ),
-			'<a href="https://codesala.in" target="_blank" rel="noopener noreferrer">CodeSala</a>'
-		);
-		?>
-	</p>
 
 </div><!-- .blaf-wrap -->

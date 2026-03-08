@@ -12,9 +12,9 @@ Scan your WordPress site for broken links (404, 500 errors) and fix or remove th
 
 == Description ==
 
-**Broken Link Auto Fixer** by [CodeSala](https://codesala.in) is a powerful yet easy-to-use plugin that keeps your website free of dead links — protecting your SEO rankings and user experience.
+**Broken Link Auto Fixer** is a powerful yet easy-to-use plugin that keeps your website free of dead links — protecting your SEO rankings and improving the user experience.
 
-### 🔍 Key Features
+= Key Features =
 
 * **One-Click Scan** — Instantly scan all posts and pages for broken links.
 * **Background Scanning** — AJAX-powered scanning with a live progress bar so your browser never freezes.
@@ -27,10 +27,6 @@ Scan your WordPress site for broken links (404, 500 errors) and fix or remove th
 * **Ignore / Delete Records** — Mark links as ignored or delete records you no longer need.
 * **Modern Dashboard** — Clean, WordPress-native UI with statistics bar, sortable table, and modal popups.
 * **Secure** — Nonce verification, capability checks, prepared SQL statements, and output escaping throughout.
-
-### 🏢 About CodeSala
-
-Broken Link Auto Fixer is developed and maintained by **Bikas Kumar** at **CodeSala** (codesala.in) — a software company dedicated to building high-quality WordPress tools.
 
 == Installation ==
 
@@ -82,23 +78,26 @@ It replaces the broken URL in the post's content with the new URL you enter. The
 
 = Is my data deleted when I uninstall the plugin? =
 
-Yes. The plugin's custom database table (`wp_broken_links`) and all options are deleted on uninstall.
+Yes. The plugin's custom database table (`wp_broken_links`) and all options are removed on uninstall.
 
 = Does the plugin support multisite? =
 
 Single-site is officially supported in v1.0.0. Multisite support is planned for a future release.
 
+= Is there a premium version? =
+
+No. This plugin is completely free and open source under the GPL v2 or later license.
+
 == Screenshots ==
 
-1. **Dashboard** — Broken links table with HTTP codes, post titles, and action buttons.
-2. **Scan Progress** — Live progress bar while a scan is running.
-3. **Replace URL Modal** — Enter a replacement URL directly from the dashboard.
-4. **Settings Page** — Configure auto-scan, email alerts, and scan limits.
-5. **Email Alert** — Sample email notification sent when broken links are detected.
+1. Dashboard — Broken links table with HTTP codes, post titles, and action buttons.
+2. Scan Progress — Live progress bar while a scan is running.
+3. Replace URL Modal — Enter a replacement URL directly from the dashboard.
+4. Settings Page — Configure auto-scan, email alerts, and scan limits.
 
 == Changelog ==
 
-= 1.0.0 — 2025-03-01 =
+= 1.0.0 =
 * Initial release.
 * Full site scanning via AJAX with progress bar.
 * Replace URL and Remove Link fix options.

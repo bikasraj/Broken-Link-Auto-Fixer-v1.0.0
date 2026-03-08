@@ -9,8 +9,6 @@
  *  - Ignoring / deleting a record.
  *
  * @package BrokenLinkAutoFixer
- * @author  Bikas Kumar <bikas@codesala.in>
- * @company CodeSala — codesala.in
  */
 
 // Prevent direct file access.
@@ -18,6 +16,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Registers and handles all AJAX endpoints for the plugin.
+ */
 class BLAF_Ajax_Handler {
 
 	/**
@@ -38,8 +39,9 @@ class BLAF_Ajax_Handler {
 	// ─── Shared Security ─────────────────────────────────────────────────────
 
 	/**
-	 * Verify nonce and capability, then return the sanitized POST value.
-	 * Calls wp_send_json_error and exits on failure.
+	 * Verify nonce and capability. Sends JSON error and exits on failure.
+	 *
+	 * @return void
 	 */
 	private function verify_request() {
 		if ( ! check_ajax_referer( 'blaf_nonce', 'nonce', false ) ) {
@@ -55,9 +57,7 @@ class BLAF_Ajax_Handler {
 	/**
 	 * AJAX: Start a full site scan.
 	 *
-	 * The scan is executed synchronously in this request; for very large
-	 * sites a batch/queue approach (batched via repeated AJAX calls) is
-	 * used — see scan_progress().
+	 * @return void
 	 */
 	public function start_scan() {
 		$this->verify_request();
@@ -73,20 +73,24 @@ class BLAF_Ajax_Handler {
 			wp_send_json_error( array( 'message' => $result['error'] ) );
 		}
 
-		wp_send_json_success( array(
-			'message' => sprintf(
-				/* translators: 1: links checked, 2: broken links found */
-				__( 'Scan complete. %1$d links checked, %2$d broken links found.', 'broken-link-auto-fixer' ),
-				$result['checked'],
-				$result['found']
-			),
-			'found'   => $result['found'],
-			'checked' => $result['checked'],
-		) );
+		wp_send_json_success(
+			array(
+				'message' => sprintf(
+					/* translators: 1: Number of links checked, 2: Number of broken links found. */
+					__( 'Scan complete. %1$d links checked, %2$d broken links found.', 'broken-link-auto-fixer' ),
+					$result['checked'],
+					$result['found']
+				),
+				'found'   => $result['found'],
+				'checked' => $result['checked'],
+			)
+		);
 	}
 
 	/**
 	 * AJAX: Return current scan status (for a polling progress bar).
+	 *
+	 * @return void
 	 */
 	public function scan_progress() {
 		$this->verify_request();
@@ -95,11 +99,13 @@ class BLAF_Ajax_Handler {
 		$last_scan = get_option( 'blaf_last_scan', '' );
 		$total     = BLAF_Database::count_broken();
 
-		wp_send_json_success( array(
-			'running'   => $running,
-			'last_scan' => $last_scan,
-			'total'     => $total,
-		) );
+		wp_send_json_success(
+			array(
+				'running'   => $running,
+				'last_scan' => $last_scan,
+				'total'     => $total,
+			)
+		);
 	}
 
 	// ─── Fix: Replace URL ────────────────────────────────────────────────────
@@ -110,12 +116,14 @@ class BLAF_Ajax_Handler {
 	 * Expected POST fields:
 	 *   record_id   int     — ID in wp_broken_links table.
 	 *   new_url     string  — The replacement URL.
+	 *
+	 * @return void
 	 */
 	public function replace_url() {
 		$this->verify_request();
 
-		$record_id = absint( $_POST['record_id'] ?? 0 );
-		$new_url   = esc_url_raw( sanitize_text_field( $_POST['new_url'] ?? '' ) );
+		$record_id = isset( $_POST['record_id'] ) ? absint( $_POST['record_id'] ) : 0;
+		$new_url   = isset( $_POST['new_url'] ) ? esc_url_raw( sanitize_text_field( wp_unslash( $_POST['new_url'] ) ) ) : '';
 
 		if ( ! $record_id || empty( $new_url ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid input.', 'broken-link-auto-fixer' ) ) );
@@ -144,10 +152,13 @@ class BLAF_Ajax_Handler {
 		}
 
 		// Update the post.
-		$result = wp_update_post( array(
-			'ID'           => $post->ID,
-			'post_content' => $new_content,
-		), true );
+		$result = wp_update_post(
+			array(
+				'ID'           => $post->ID,
+				'post_content' => $new_content,
+			),
+			true
+		);
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
@@ -156,9 +167,11 @@ class BLAF_Ajax_Handler {
 		// Mark the record as fixed.
 		BLAF_Database::update_status( $record_id, 'fixed' );
 
-		wp_send_json_success( array(
-			'message' => __( 'URL replaced successfully and post updated.', 'broken-link-auto-fixer' ),
-		) );
+		wp_send_json_success(
+			array(
+				'message' => __( 'URL replaced successfully and post updated.', 'broken-link-auto-fixer' ),
+			)
+		);
 	}
 
 	// ─── Fix: Remove Link ────────────────────────────────────────────────────
@@ -168,11 +181,13 @@ class BLAF_Ajax_Handler {
 	 *
 	 * Expected POST fields:
 	 *   record_id   int  — ID in wp_broken_links table.
+	 *
+	 * @return void
 	 */
 	public function remove_link() {
 		$this->verify_request();
 
-		$record_id = absint( $_POST['record_id'] ?? 0 );
+		$record_id = isset( $_POST['record_id'] ) ? absint( $_POST['record_id'] ) : 0;
 		if ( ! $record_id ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid input.', 'broken-link-auto-fixer' ) ) );
 		}
@@ -187,19 +202,22 @@ class BLAF_Ajax_Handler {
 			wp_send_json_error( array( 'message' => __( 'Post not found.', 'broken-link-auto-fixer' ) ) );
 		}
 
-		// Use regex to strip the <a href="broken_url">…</a> but keep inner text.
+		// Use regex to strip the <a href="broken_url">...</a> but keep inner text.
 		$broken_url_escaped = preg_quote( $record->broken_url, '/' );
-		$pattern     = '/<a\s[^>]*href=["\']' . $broken_url_escaped . '["\'][^>]*>(.*?)<\/a>/is';
-		$new_content = preg_replace( $pattern, '$1', $post->post_content );
+		$pattern            = '/<a\s[^>]*href=["\']' . $broken_url_escaped . '["\'][^>]*>(.*?)<\/a>/is';
+		$new_content        = preg_replace( $pattern, '$1', $post->post_content );
 
 		if ( null === $new_content || $new_content === $post->post_content ) {
 			wp_send_json_error( array( 'message' => __( 'Link was not found in post content.', 'broken-link-auto-fixer' ) ) );
 		}
 
-		$result = wp_update_post( array(
-			'ID'           => $post->ID,
-			'post_content' => $new_content,
-		), true );
+		$result = wp_update_post(
+			array(
+				'ID'           => $post->ID,
+				'post_content' => $new_content,
+			),
+			true
+		);
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
@@ -207,20 +225,24 @@ class BLAF_Ajax_Handler {
 
 		BLAF_Database::update_status( $record_id, 'fixed' );
 
-		wp_send_json_success( array(
-			'message' => __( 'Link removed; anchor text preserved.', 'broken-link-auto-fixer' ),
-		) );
+		wp_send_json_success(
+			array(
+				'message' => __( 'Link removed; anchor text preserved.', 'broken-link-auto-fixer' ),
+			)
+		);
 	}
 
 	// ─── Ignore / Delete ─────────────────────────────────────────────────────
 
 	/**
 	 * AJAX: Mark a broken link record as "ignored".
+	 *
+	 * @return void
 	 */
 	public function ignore_link() {
 		$this->verify_request();
 
-		$record_id = absint( $_POST['record_id'] ?? 0 );
+		$record_id = isset( $_POST['record_id'] ) ? absint( $_POST['record_id'] ) : 0;
 		if ( ! $record_id ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid input.', 'broken-link-auto-fixer' ) ) );
 		}
@@ -231,11 +253,13 @@ class BLAF_Ajax_Handler {
 
 	/**
 	 * AJAX: Hard-delete a broken link record from the database.
+	 *
+	 * @return void
 	 */
 	public function delete_record() {
 		$this->verify_request();
 
-		$record_id = absint( $_POST['record_id'] ?? 0 );
+		$record_id = isset( $_POST['record_id'] ) ? absint( $_POST['record_id'] ) : 0;
 		if ( ! $record_id ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid input.', 'broken-link-auto-fixer' ) ) );
 		}

@@ -6,8 +6,6 @@
  * main dashboard page and settings page.
  *
  * @package BrokenLinkAutoFixer
- * @author  Bikas Kumar <bikas@codesala.in>
- * @company CodeSala — codesala.in
  */
 
 // Prevent direct file access.
@@ -15,6 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Handles admin menu registration and page rendering.
+ */
 class BLAF_Admin_Page {
 
 	/**
@@ -29,6 +30,8 @@ class BLAF_Admin_Page {
 
 	/**
 	 * Register admin menu and sub-menu pages.
+	 *
+	 * @return void
 	 */
 	public function register_menu() {
 		add_menu_page(
@@ -64,6 +67,8 @@ class BLAF_Admin_Page {
 
 	/**
 	 * Render the main broken-links dashboard page.
+	 *
+	 * @return void
 	 */
 	public function render_dashboard() {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -82,16 +87,19 @@ class BLAF_Admin_Page {
 
 	/**
 	 * Render the plugin settings page.
+	 *
+	 * @return void
 	 */
 	public function render_settings() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'broken-link-auto-fixer' ) );
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$saved = isset( $_GET['saved'] ) && '1' === $_GET['saved'];
 		?>
 		<div class="wrap blaf-wrap">
-			<h1><?php esc_html_e( 'Broken Link Auto Fixer — Settings', 'broken-link-auto-fixer' ); ?></h1>
+			<h1><?php esc_html_e( 'Broken Link Auto Fixer &mdash; Settings', 'broken-link-auto-fixer' ); ?></h1>
 
 			<?php if ( $saved ) : ?>
 				<div class="notice notice-success is-dismissible">
@@ -164,16 +172,6 @@ class BLAF_Admin_Page {
 
 				<?php submit_button( __( 'Save Settings', 'broken-link-auto-fixer' ) ); ?>
 			</form>
-
-			<p class="blaf-footer-credit">
-				<?php
-				printf(
-					/* translators: 1: company name, 2: company URL */
-					esc_html__( 'Broken Link Auto Fixer by %1$s', 'broken-link-auto-fixer' ),
-					'<a href="https://codesala.in" target="_blank" rel="noopener noreferrer">CodeSala</a>'
-				);
-				?>
-			</p>
 		</div>
 		<?php
 	}
@@ -182,6 +180,8 @@ class BLAF_Admin_Page {
 
 	/**
 	 * Process the settings form submission.
+	 *
+	 * @return void
 	 */
 	public function save_settings() {
 		// Capability check.
@@ -193,11 +193,15 @@ class BLAF_Admin_Page {
 		check_admin_referer( 'blaf_save_settings', 'blaf_settings_nonce' );
 
 		// Save each setting with proper sanitization.
-		update_option( 'blaf_scan_enabled',  isset( $_POST['blaf_scan_enabled'] )  ? 1 : 0 );
-		update_option( 'blaf_auto_scan',     isset( $_POST['blaf_auto_scan'] )     ? 1 : 0 );
-		update_option( 'blaf_email_alerts',  isset( $_POST['blaf_email_alerts'] )  ? 1 : 0 );
-		update_option( 'blaf_max_links',     absint( $_POST['blaf_max_links'] ?? 100 ) );
-		update_option( 'blaf_alert_email',   sanitize_email( $_POST['blaf_alert_email'] ?? '' ) );
+		update_option( 'blaf_scan_enabled', isset( $_POST['blaf_scan_enabled'] ) ? 1 : 0 );
+		update_option( 'blaf_auto_scan',    isset( $_POST['blaf_auto_scan'] )    ? 1 : 0 );
+		update_option( 'blaf_email_alerts', isset( $_POST['blaf_email_alerts'] ) ? 1 : 0 );
+
+		$max_links = isset( $_POST['blaf_max_links'] ) ? absint( wp_unslash( $_POST['blaf_max_links'] ) ) : 100;
+		update_option( 'blaf_max_links', $max_links );
+
+		$alert_email = isset( $_POST['blaf_alert_email'] ) ? sanitize_email( wp_unslash( $_POST['blaf_alert_email'] ) ) : '';
+		update_option( 'blaf_alert_email', $alert_email );
 
 		// Reschedule cron based on new setting.
 		$timestamp = wp_next_scheduled( 'blaf_daily_scan_event' );

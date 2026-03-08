@@ -6,8 +6,6 @@
  * in the wp_broken_links custom table.
  *
  * @package BrokenLinkAutoFixer
- * @author  Bikas Kumar <bikas@codesala.in>
- * @company CodeSala — codesala.in
  */
 
 // Prevent direct file access.
@@ -15,6 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Manages all database interactions for the Broken Link Auto Fixer plugin.
+ */
 class BLAF_Database {
 
 	/**
@@ -38,13 +39,15 @@ class BLAF_Database {
 	 *  post_title  — Cached title so we can display it without a JOIN.
 	 *  broken_url  — The URL that returned a non-200 HTTP status code.
 	 *  status      — Workflow state: 'broken', 'fixed', 'ignored'.
-	 *  http_code   — The actual HTTP response code (404, 500, 0 = timeout…).
+	 *  http_code   — The actual HTTP response code (404, 500, 0 = timeout).
 	 *  date_found  — Timestamp of when the scanner first detected this link.
+	 *
+	 * @return void
 	 */
 	public static function create_table() {
 		global $wpdb;
 
-		$table      = self::table_name();
+		$table           = self::table_name();
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$sql = "CREATE TABLE {$table} (
@@ -69,10 +72,10 @@ class BLAF_Database {
 	/**
 	 * Insert a broken-link record (skip duplicates for same post + URL).
 	 *
-	 * @param int    $post_id
-	 * @param string $post_title
-	 * @param string $broken_url
-	 * @param int    $http_code
+	 * @param int    $post_id    WordPress post ID.
+	 * @param string $post_title Post title for display.
+	 * @param string $broken_url The broken URL detected.
+	 * @param int    $http_code  HTTP response code returned.
 	 * @return int|false Inserted row ID or false on failure / duplicate.
 	 */
 	public static function insert_link( $post_id, $post_title, $broken_url, $http_code ) {
@@ -80,16 +83,18 @@ class BLAF_Database {
 		$table = self::table_name();
 
 		// Avoid duplicates: same post + same URL already in table.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$exists = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT id FROM {$table} WHERE post_id = %d AND broken_url = %s LIMIT 1",
-				$post_id,
-				$broken_url
+				"SELECT id FROM {$table} WHERE post_id = %d AND broken_url = %s LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				absint( $post_id ),
+				esc_url_raw( $broken_url )
 			)
 		);
 
 		if ( $exists ) {
 			// Update the http_code and date_found on re-scan.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->update(
 				$table,
 				array(
@@ -97,13 +102,14 @@ class BLAF_Database {
 					'status'     => 'broken',
 					'date_found' => current_time( 'mysql' ),
 				),
-				array( 'id' => $exists ),
+				array( 'id' => absint( $exists ) ),
 				array( '%d', '%s', '%s' ),
 				array( '%d' )
 			);
 			return (int) $exists;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$inserted = $wpdb->insert(
 			$table,
 			array(
@@ -124,11 +130,11 @@ class BLAF_Database {
 	 * Retrieve all broken-link records with optional filters.
 	 *
 	 * @param array $args {
-	 *   @type string $status   Filter by status. Default 'broken'.
+	 *   @type string $status   Filter by status. Default ''.
 	 *   @type int    $limit    Max rows. Default 500.
 	 *   @type int    $offset   Offset for pagination. Default 0.
 	 * }
-	 * @return array
+	 * @return array Array of result objects.
 	 */
 	public static function get_links( $args = array() ) {
 		global $wpdb;
@@ -141,49 +147,58 @@ class BLAF_Database {
 		);
 		$args = wp_parse_args( $args, $defaults );
 
-		$where = '';
-		$params = array();
-
 		if ( ! empty( $args['status'] ) ) {
-			$where    = 'WHERE status = %s';
-			$params[] = sanitize_text_field( $args['status'] );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			return $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$table} WHERE status = %s ORDER BY date_found DESC LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					sanitize_text_field( $args['status'] ),
+					absint( $args['limit'] ),
+					absint( $args['offset'] )
+				)
+			);
 		}
 
-		$params[] = absint( $args['limit'] );
-		$params[] = absint( $args['offset'] );
-
-		$sql = "SELECT * FROM {$table} {$where} ORDER BY date_found DESC LIMIT %d OFFSET %d";
-
-		return $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$table} ORDER BY date_found DESC LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				absint( $args['limit'] ),
+				absint( $args['offset'] )
+			)
+		);
 	}
 
 	/**
 	 * Get a single link record by ID.
 	 *
-	 * @param int $id
+	 * @param int $id Record ID.
 	 * @return object|null
 	 */
 	public static function get_link( $id ) {
 		global $wpdb;
 		$table = self::table_name();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		return $wpdb->get_row(
-			$wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d LIMIT 1", absint( $id ) )
+			$wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d LIMIT 1", absint( $id ) ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 	}
 
 	/**
 	 * Update the status of a link record.
 	 *
-	 * @param int    $id
-	 * @param string $status  'broken' | 'fixed' | 'ignored'
+	 * @param int    $id     Record ID.
+	 * @param string $status 'broken' | 'fixed' | 'ignored'.
 	 * @return bool
 	 */
 	public static function update_status( $id, $status ) {
 		global $wpdb;
-		$table          = self::table_name();
-		$allowed        = array( 'broken', 'fixed', 'ignored' );
+		$table   = self::table_name();
+		$allowed = array( 'broken', 'fixed', 'ignored' );
+
 		$sanitized_status = in_array( $status, $allowed, true ) ? $status : 'broken';
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		return (bool) $wpdb->update(
 			$table,
 			array( 'status' => $sanitized_status ),
@@ -196,12 +211,13 @@ class BLAF_Database {
 	/**
 	 * Delete a record by ID.
 	 *
-	 * @param int $id
+	 * @param int $id Record ID.
 	 * @return bool
 	 */
 	public static function delete_link( $id ) {
 		global $wpdb;
 		$table = self::table_name();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		return (bool) $wpdb->delete(
 			$table,
 			array( 'id' => absint( $id ) ),
@@ -217,8 +233,9 @@ class BLAF_Database {
 	public static function count_broken() {
 		global $wpdb;
 		$table = self::table_name();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		return (int) $wpdb->get_var(
-			$wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE status = %s", 'broken' )
+			$wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE status = %s", 'broken' ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 	}
 
@@ -230,7 +247,7 @@ class BLAF_Database {
 	public static function drop_table() {
 		global $wpdb;
 		$table = self::table_name();
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
-		$wpdb->query( "DROP TABLE IF EXISTS {$table}" );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.SchemaChange
+		$wpdb->query( "DROP TABLE IF EXISTS {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	}
 }
