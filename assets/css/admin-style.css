@@ -1,0 +1,407 @@
+/**
+ * Broken Link Auto Fixer — Admin Styles
+ *
+ * @package BrokenLinkAutoFixer
+ * @author  Bikas Kumar <bikas@codesala.in>
+ * @company CodeSala — codesala.in
+ */
+
+/* ── Reset / Base ─────────────────────────────────────────────────── */
+.blaf-wrap * {
+	box-sizing: border-box;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+.blaf-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 18px 24px;
+	margin: 20px 0 16px;
+	box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.blaf-header-left {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.blaf-header-left h1 {
+	margin: 0;
+	padding: 0;
+	font-size: 22px;
+	font-weight: 700;
+	color: #1d2327;
+}
+
+.blaf-icon {
+	font-size: 28px;
+	color: #d63638;
+	width: 28px;
+	height: 28px;
+}
+
+.blaf-by {
+	font-size: 12px;
+	color: #888;
+	margin-left: 4px;
+}
+
+.blaf-by a {
+	color: #2271b1;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.blaf-by a:hover {
+	text-decoration: underline;
+}
+
+/* ── Stats Bar ────────────────────────────────────────────────────── */
+.blaf-stats-bar {
+	display: flex;
+	gap: 16px;
+	margin-bottom: 20px;
+	flex-wrap: wrap;
+}
+
+.blaf-stat-card {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 16px 24px;
+	min-width: 160px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.blaf-stat-number {
+	font-size: 28px;
+	font-weight: 700;
+	color: #d63638;
+	line-height: 1;
+}
+
+.blaf-stat-last-scan {
+	font-size: 13px;
+	font-weight: 600;
+	color: #50575e;
+}
+
+.blaf-stat-label {
+	font-size: 12px;
+	color: #888;
+	margin-top: 4px;
+}
+
+/* ── Scan Box ─────────────────────────────────────────────────────── */
+.blaf-scan-box {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 24px;
+	margin-bottom: 24px;
+	box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+#blaf-start-scan {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 15px;
+	padding: 10px 22px;
+	height: auto;
+	border-radius: 6px;
+	background: #2271b1;
+	border-color: #135e96;
+	color: #fff;
+	cursor: pointer;
+	transition: background .15s ease;
+}
+
+#blaf-start-scan:hover {
+	background: #135e96;
+}
+
+#blaf-start-scan:disabled {
+	background: #a0b4c8;
+	border-color: #a0b4c8;
+	cursor: not-allowed;
+}
+
+/* Progress Bar */
+#blaf-progress-wrapper {
+	margin-top: 16px;
+}
+
+.blaf-progress-bar-outer {
+	background: #f0f0f0;
+	border-radius: 999px;
+	height: 10px;
+	overflow: hidden;
+	width: 100%;
+	max-width: 500px;
+}
+
+.blaf-progress-bar-inner {
+	height: 100%;
+	background: linear-gradient(90deg, #2271b1, #72aee6);
+	width: 0%;
+	border-radius: 999px;
+	transition: width .4s ease;
+	animation: blaf-shimmer 1.5s infinite;
+}
+
+@keyframes blaf-shimmer {
+	0%   { opacity: 1; }
+	50%  { opacity: .7; }
+	100% { opacity: 1; }
+}
+
+.blaf-progress-text {
+	color: #50575e;
+	font-size: 13px;
+	margin: 6px 0 0;
+}
+
+/* Notice / Result messages */
+.blaf-notice {
+	margin-top: 12px;
+	padding: 10px 14px;
+	border-radius: 6px;
+	font-size: 13px;
+	max-width: 600px;
+}
+
+.blaf-notice.is-success {
+	background: #edfaef;
+	border-left: 4px solid #00a32a;
+	color: #1a6c2a;
+}
+
+.blaf-notice.is-error {
+	background: #fef0f0;
+	border-left: 4px solid #d63638;
+	color: #8a1f1f;
+}
+
+/* ── Section Title ────────────────────────────────────────────────── */
+.blaf-section-title {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 16px;
+	margin-bottom: 10px;
+}
+
+.blaf-badge {
+	background: #d63638;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 700;
+	border-radius: 999px;
+	padding: 2px 8px;
+	line-height: 1.4;
+}
+
+/* ── Empty State ──────────────────────────────────────────────────── */
+.blaf-empty-state {
+	text-align: center;
+	padding: 48px 24px;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+}
+
+.blaf-empty-icon {
+	font-size: 48px;
+	color: #00a32a;
+	display: block;
+	margin-bottom: 12px;
+}
+
+.blaf-empty-state p {
+	font-size: 15px;
+	color: #50575e;
+	margin: 0;
+}
+
+/* ── Broken Links Table ───────────────────────────────────────────── */
+.blaf-links-table {
+	margin-top: 0;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.blaf-links-table thead th {
+	background: #f6f7f7;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: .03em;
+	color: #50575e;
+	padding: 10px 12px;
+}
+
+.blaf-links-table tbody td {
+	vertical-align: middle;
+	padding: 10px 12px;
+	font-size: 13px;
+}
+
+.blaf-links-table tbody tr:hover {
+	background: #f9fafb;
+}
+
+/* Column widths */
+.blaf-col-id      { width: 48px; }
+.blaf-col-code    { width: 100px; }
+.blaf-col-date    { width: 120px; }
+.blaf-col-actions { width: 300px; }
+
+/* HTTP Code badges */
+.blaf-http-badge {
+	display: inline-block;
+	font-size: 12px;
+	font-weight: 700;
+	border-radius: 4px;
+	padding: 2px 8px;
+	letter-spacing: .02em;
+}
+
+.blaf-code-client  { background: #fef3cd; color: #856404; }
+.blaf-code-server  { background: #f8d7da; color: #842029; }
+.blaf-code-timeout { background: #d1ecf1; color: #0c5460; }
+
+.blaf-broken-url {
+	color: #d63638;
+	word-break: break-all;
+	font-size: 12px;
+}
+
+.blaf-view-post {
+	font-size: 11px;
+	color: #2271b1;
+}
+
+/* Action buttons */
+.blaf-action-cell {
+	display: flex;
+	gap: 5px;
+	flex-wrap: wrap;
+}
+
+.blaf-action-cell .button-small {
+	font-size: 11px;
+	padding: 2px 8px;
+	height: auto;
+	line-height: 1.6;
+	border-radius: 4px;
+}
+
+.blaf-btn-replace { border-color: #2271b1; color: #2271b1; }
+.blaf-btn-replace:hover { background: #2271b1; color: #fff; }
+
+.blaf-btn-remove  { border-color: #d63638; color: #d63638; }
+.blaf-btn-remove:hover  { background: #d63638; color: #fff; }
+
+.blaf-btn-ignore  { border-color: #888; color: #888; }
+.blaf-btn-ignore:hover  { background: #888; color: #fff; }
+
+.blaf-btn-delete  { border-color: #50575e; color: #50575e; }
+.blaf-btn-delete:hover  { background: #50575e; color: #fff; }
+
+/* Row fade-out on fix/delete */
+.blaf-row-removing {
+	opacity: 0;
+	transition: opacity .4s ease;
+}
+
+/* ── Modal ────────────────────────────────────────────────────────── */
+.blaf-modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,.55);
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.blaf-modal {
+	background: #fff;
+	border-radius: 10px;
+	padding: 28px 32px;
+	width: 480px;
+	max-width: 94vw;
+	box-shadow: 0 8px 32px rgba(0,0,0,.18);
+}
+
+.blaf-modal h3 {
+	margin: 0 0 14px;
+	font-size: 18px;
+	color: #1d2327;
+}
+
+.blaf-modal-old-url {
+	font-size: 12px;
+	color: #d63638;
+	word-break: break-all;
+	background: #fef0f0;
+	padding: 6px 10px;
+	border-radius: 4px;
+	margin-bottom: 12px;
+}
+
+.blaf-modal label {
+	display: block;
+	margin-bottom: 6px;
+	font-weight: 600;
+	font-size: 13px;
+}
+
+.blaf-modal input.regular-text {
+	width: 100%;
+	margin-bottom: 16px;
+}
+
+.blaf-modal-actions {
+	display: flex;
+	gap: 10px;
+}
+
+/* ── Settings Table ───────────────────────────────────────────────── */
+.blaf-settings-table th {
+	padding: 18px 10px 18px 0;
+	vertical-align: top;
+	width: 220px;
+}
+
+.blaf-settings-table td {
+	padding: 14px 10px;
+}
+
+/* ── Footer Credit ────────────────────────────────────────────────── */
+.blaf-footer-credit {
+	margin-top: 28px;
+	font-size: 12px;
+	color: #aaa;
+	text-align: right;
+}
+
+.blaf-footer-credit a {
+	color: #2271b1;
+	text-decoration: none;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media screen and (max-width: 782px) {
+	.blaf-stats-bar { flex-direction: column; }
+	.blaf-action-cell { flex-direction: column; }
+	.blaf-links-table .blaf-col-url { display: none; }
+}
