@@ -1,0 +1,337 @@
+/**
+ * Admin styles for Broken Link Auto Fixer
+ *
+ * @link    https://codesala.in
+ * @since   1.0.0
+ * @package Broken_Link_Auto_Fixer
+ * @author  Bikas Kumar <bikas@codesala.in>
+ */
+
+/* ─── Layout ──────────────────────────────────────────────────────── */
+.blaf-wrap {
+    max-width: 1200px;
+}
+
+.blaf-page-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 23px;
+    font-weight: 600;
+    color: #1d2327;
+    margin-bottom: 4px;
+}
+
+.blaf-page-title .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #d63638;
+}
+
+.blaf-version {
+    font-size: 12px;
+    background: #f0f0f1;
+    color: #50575e;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 400;
+}
+
+.blaf-tagline {
+    color: #646970;
+    margin-bottom: 20px;
+    font-size: 13px;
+}
+
+.blaf-tagline a {
+    color: #2271b1;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* ─── Card ────────────────────────────────────────────────────────── */
+.blaf-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+/* ─── Scan Controls ───────────────────────────────────────────────── */
+.blaf-scan-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.blaf-scan-controls .button .dashicons {
+    vertical-align: middle;
+    margin-right: 4px;
+    margin-top: -2px;
+}
+
+/* ─── Progress Bar ────────────────────────────────────────────────── */
+.blaf-progress-wrap {
+    margin-top: 16px;
+}
+
+.blaf-progress-bar-outer {
+    width: 100%;
+    background: #f0f0f1;
+    border-radius: 4px;
+    height: 12px;
+    overflow: hidden;
+}
+
+.blaf-progress-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, #2271b1, #135e96);
+    width: 0%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    animation: blaf-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes blaf-pulse {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.blaf-scan-status {
+    margin: 8px 0 0;
+    color: #50575e;
+    font-size: 13px;
+}
+
+/* ─── Notice ──────────────────────────────────────────────────────── */
+.blaf-notice {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.blaf-notice.blaf-notice-success {
+    background: #edfaef;
+    border-left: 4px solid #00a32a;
+    color: #1a5b25;
+}
+
+.blaf-notice.blaf-notice-error {
+    background: #fbeaea;
+    border-left: 4px solid #d63638;
+    color: #6b1414;
+}
+
+/* ─── Stats Bar ───────────────────────────────────────────────────── */
+.blaf-stats-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.blaf-stat-box {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.blaf-stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #d63638;
+    line-height: 1;
+}
+
+.blaf-stat-label {
+    font-size: 12px;
+    color: #646970;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ─── Table ───────────────────────────────────────────────────────── */
+.blaf-table {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.blaf-table th {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.column-id     { width: 50px; }
+.column-post   { width: 180px; }
+.column-url    { width: auto; }
+.column-anchor { width: 130px; }
+.column-code   { width: 100px; text-align: center; }
+.column-date   { width: 140px; }
+.column-actions{ width: 220px; }
+
+.blaf-broken-url {
+    color: #d63638;
+    word-break: break-all;
+    font-size: 12px;
+}
+
+/* ─── HTTP Badge ──────────────────────────────────────────────────── */
+.blaf-http-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.blaf-code-404 { background: #fbeaea; color: #d63638; }
+.blaf-code-500 { background: #fef8ee; color: #996800; }
+.blaf-code-403 { background: #f0f6fc; color: #2271b1; }
+.blaf-code-410 { background: #fbeaea; color: #d63638; }
+.blaf-code-0   { background: #f0f0f1; color: #50575e; }
+
+/* ─── Action Buttons ──────────────────────────────────────────────── */
+.column-actions .button {
+    margin-right: 4px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    padding: 0 8px;
+    height: 26px;
+    line-height: 24px;
+}
+
+.column-actions .button .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    margin-right: 2px;
+    margin-top: -1px;
+}
+
+.blaf-btn-replace .dashicons { color: #2271b1; }
+.blaf-btn-remove  .dashicons { color: #d63638; }
+.blaf-btn-ignore  .dashicons { color: #646970; }
+
+/* ─── Empty State ─────────────────────────────────────────────────── */
+.blaf-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #646970;
+}
+
+.blaf-empty-state .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #00a32a;
+    display: block;
+    margin: 0 auto 12px;
+}
+
+.blaf-empty-state p {
+    font-size: 15px;
+    margin: 0;
+}
+
+/* ─── Pagination ──────────────────────────────────────────────────── */
+.blaf-pagination {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ─── Settings Page ───────────────────────────────────────────────── */
+.blaf-settings-table th {
+    width: 220px;
+    padding: 16px 10px 16px 0;
+}
+
+.blaf-settings-table td {
+    padding: 14px 10px;
+}
+
+.blaf-settings-table .description {
+    color: #646970;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Toggle Switch */
+.blaf-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.blaf-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.blaf-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #c3c4c7;
+    border-radius: 34px;
+    transition: .3s;
+}
+
+.blaf-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .3s;
+}
+
+.blaf-toggle input:checked + .blaf-toggle-slider {
+    background-color: #2271b1;
+}
+
+.blaf-toggle input:checked + .blaf-toggle-slider:before {
+    transform: translateX(20px);
+}
+
+/* Info Card */
+.blaf-info-card {
+    background: #f8f9fa;
+}
+
+.blaf-info-card h2 {
+    margin-top: 0;
+    font-size: 15px;
+}
+
+/* Spinner overlay on buttons */
+.blaf-spinning {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Row fade-out on action */
+.blaf-row-fading {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
